@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Screen Time">
+<meta name="theme-color" content="#ffffff">
+<title>Screen Time</title>
+<link rel="manifest" id="manifestLink">
+<style>
+  :root {
+    --bg: #f7f6f2;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.1);
+    --border-strong: rgba(0,0,0,0.2);
+    --text: #1a1a1a;
+    --text-muted: #888;
+    --text-hint: #bbb;
+    --accent: #1a1a1a;
+    --accent-light: #f0efe9;
+    --danger: #c0392b;
+    --danger-bg: #fdf0ee;
+    --warn: #b8560a;
+    --warn-bg: #fef5ec;
+    --green: #1a7a4a;
+    --green-bg: #edf7f2;
+    --radius: 14px;
+    --radius-sm: 8px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif; color: var(--text); overscroll-behavior: none; }
+  body { display: flex; flex-direction: column; }
+
+  .screen { display: none; flex-direction: column; min-height: 100dvh; padding: 0 0 env(safe-area-inset-bottom); }
+  .screen.active { display: flex; }
+
+  /* NAV BAR */
+  .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 56px 20px 16px; background: var(--surface); border-bottom: 0.5px solid var(--border); }
+  .nav-bar h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
+  .nav-bar .nav-action { font-size: 14px; color: var(--text-muted); background: none; border: none; font-family: inherit; cursor: pointer; padding: 6px; }
+  .nav-bar .nav-action:hover { color: var(--text); }
+  .nav-back { font-size: 14px; color: var(--text-muted); background: none; border: none; font-family: inherit; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+  .nav-back:before { content: '‹'; font-size: 20px; line-height: 1; }
+
+  /* SCROLL BODY */
+  .scroll-body { flex: 1; overflow-y: auto; padding: 16px 20px 32px; }
+
+  /* SECTION LABEL */
+  .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin: 20px 0 8px; }
+  .section-label:first-child { margin-top: 0; }
+
+  /* KID LIST */
+  .kid-list { display: flex; flex-direction: column; gap: 10px; }
+  .kid-card { background: var(--surface); border-radius: var(--radius); border: 0.5px solid var(--border); padding: 16px; cursor: pointer; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow); transition: transform 0.1s; }
+  .kid-card:active { transform: scale(0.98); }
+  .kid-avatar { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600; flex-shrink: 0; }
+  .kid-info { flex: 1; min-width: 0; }
+  .kid-name { font-size: 16px; font-weight: 500; }
+  .kid-tickets { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+  .kid-chevron { color: var(--text-hint); font-size: 18px; }
+
+  /* PIN PAD */
+  .pin-display { display: flex; gap: 14px; justify-content: center; margin: 32px 0 28px; }
+  .pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--border-strong); transition: background 0.15s, border-color 0.15s; }
+  .pin-dot.filled { background: var(--text); border-color: var(--text); }
+  .pin-dot.error { background: var(--danger); border-color: var(--danger); }
+  .pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 280px; margin: 0 auto; }
+  .pin-key { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); height: 68px; font-size: 22px; font-weight: 400; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.1s; box-shadow: var(--shadow); user-select: none; }
+  .pin-key:active { background: var(--accent-light); }
+  .pin-key.del { font-size: 18px; }
+  .pin-header { text-align: center; margin-bottom: 8px; }
+  .pin-header h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; }
+  .pin-header p { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+  .pin-error-msg { text-align: center; font-size: 13px; color: var(--danger); height: 18px; margin-bottom: 8px; }
+
+  /* TICKET GRID */
+  .ticket-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .ticket-btn { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 18px 14px; cursor: pointer; text-align: center; box-shadow: var(--shadow); transition: transform 0.1s; }
+  .ticket-btn:active { transform: scale(0.97); }
+  .ticket-mins { font-size: 34px; font-weight: 600; letter-spacing: -1px; }
+  .ticket-unit { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+  .empty-msg { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 15px; line-height: 1.6; }
+
+  /* CONFIRM */
+  .confirm-card { background: var(--surface); border-radius: var(--radius); border: 0.5px solid var(--border); padding: 24px; text-align: center; box-shadow: var(--shadow); }
+  .confirm-mins { font-size: 64px; font-weight: 600; letter-spacing: -3px; line-height: 1; }
+  .confirm-unit { font-size: 16px; color: var(--text-muted); margin-top: 4px; }
+  .confirm-desc { font-size: 14px; color: var(--text-muted); margin-top: 16px; line-height: 1.5; }
+
+  /* TIMER */
+  .timer-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; }
+  .timer-name { font-size: 14px; color: var(--text-muted); margin-bottom: 8px; }
+  .timer-clock { font-size: 80px; font-weight: 600; letter-spacing: -4px; font-variant-numeric: tabular-nums; line-height: 1; }
+  .timer-progress { width: 100%; max-width: 320px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin: 28px 0; }
+  .timer-fill { height: 100%; border-radius: 3px; background: var(--text); transition: width 1s linear, background 0.5s; }
+  .timer-btns { display: flex; gap: 12px; width: 100%; max-width: 320px; }
+
+  /* ALARM */
+  .alarm-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; text-align: center; }
+  .alarm-icon { font-size: 72px; margin-bottom: 16px; animation: ring 0.5s ease-in-out infinite alternate; }
+  @keyframes ring { from { transform: rotate(-8deg); } to { transform: rotate(8deg); } }
+  .alarm-title { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; }
+  .alarm-sub { font-size: 15px; color: var(--text-muted); margin-top: 8px; line-height: 1.5; max-width: 280px; }
+
+  /* BUTTONS */
+  .btn { display: block; width: 100%; padding: 15px; border-radius: var(--radius); font-size: 16px; font-weight: 500; font-family: inherit; cursor: pointer; border: none; transition: opacity 0.1s, transform 0.1s; }
+  .btn:active { transform: scale(0.98); }
+  .btn-primary { background: var(--text); color: #fff; }
+  .btn-secondary { background: var(--accent-light); color: var(--text); }
+  .btn-danger { background: var(--danger-bg); color: var(--danger); }
+  .btn + .btn { margin-top: 10px; }
+
+  /* FORMS */
+  .form-field { margin-bottom: 14px; }
+  .form-label { font-size: 13px; color: var(--text-muted); margin-bottom: 6px; display: block; }
+  .form-input { width: 100%; padding: 13px 14px; border: 0.5px solid var(--border-strong); border-radius: var(--radius-sm); font-size: 16px; font-family: inherit; background: var(--surface); color: var(--text); outline: none; }
+  .form-input:focus { border-color: var(--text); }
+  select.form-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+
+  /* PARENT SECTION */
+  .parent-kid-row { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 8px; }
+  .parent-kid-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; }
+  .parent-kid-info { flex: 1; min-width: 0; }
+  .parent-kid-name { font-size: 15px; font-weight: 500; }
+  .parent-kid-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+  .parent-kid-actions { display: flex; gap: 6px; }
+  .icon-btn { background: var(--accent-light); border: none; border-radius: var(--radius-sm); width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; }
+  .icon-btn.danger { background: var(--danger-bg); }
+
+  /* TICKET ITEMS */
+  .ticket-item { display: flex; align-items: center; justify-content: space-between; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 6px; }
+  .ticket-item-left { font-size: 14px; }
+  .ticket-item-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  /* COLOR SWATCHES */
+  .color-picker { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 16px; }
+  .color-swatch { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: transform 0.1s, border-color 0.1s; flex-shrink: 0; }
+  .color-swatch:hover { transform: scale(1.15); }
+  .color-swatch.selected { border-color: var(--text); transform: scale(1.15); }
+
+  /* BADGE */
+  .badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
+  .badge-green { background: var(--green-bg); color: var(--green); }
+  .badge-warn { background: var(--warn-bg); color: var(--warn); }
+
+  /* MODAL OVERLAY */
+  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; align-items: flex-end; justify-content: center; z-index: 200; }
+  .overlay.open { display: flex; }
+  .sheet { background: var(--surface); border-radius: 20px 20px 0 0; width: 100%; max-width: 480px; padding: 20px 20px calc(20px + env(safe-area-inset-bottom)); max-height: 90dvh; overflow-y: auto; }
+  .sheet-handle { width: 36px; height: 4px; background: var(--border-strong); border-radius: 2px; margin: 0 auto 20px; }
+  .sheet h2 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+  .sheet .sheet-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
+
+  /* SETUP WELCOME */
+  .welcome-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; text-align: center; }
+  .welcome-icon { font-size: 64px; margin-bottom: 20px; }
+  .welcome-wrap h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
+  .welcome-wrap p { font-size: 15px; color: var(--text-muted); line-height: 1.6; margin-bottom: 32px; max-width: 300px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: SETUP (first launch)
+════════════════════════════════════════════ -->
+<div class="screen active" id="setupScreen">
+  <div class="welcome-wrap">
+    <div class="welcome-icon">🎟️</div>
+    <h1>Screen Time</h1>
+    <p>Set a parent password to get started. You'll use this to add kids and approve tickets.</p>
+    <div style="width:100%;max-width:320px;">
+      <div class="form-field">
+        <label class="form-label">Create parent password</label>
+        <input class="form-input" type="password" id="setupPw1" placeholder="Password" autocomplete="new-password">
+      </div>
+      <div class="form-field">
+        <label class="form-label">Confirm password</label>
+        <input class="form-input" type="password" id="setupPw2" placeholder="Confirm password" autocomplete="new-password">
+      </div>
+      <div style="font-size:13px;color:var(--danger);min-height:18px;margin-bottom:12px;" id="setupError"></div>
+      <button class="btn btn-primary" onclick="finishSetup()">Get started</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: HOME — Kid selector
+════════════════════════════════════════════ -->
+<div class="screen" id="homeScreen">
+  <div class="nav-bar">
+    <h1>Screen Time</h1>
+    <button class="nav-action" onclick="openParentLock()">Parent ›</button>
+  </div>
+  <div class="scroll-body">
+    <div class="section-label">Who are you?</div>
+    <div class="kid-list" id="kidList"></div>
+    <div class="empty-msg" id="homeEmpty" style="display:none;">No kids set up yet.<br>Tap <strong>Parent</strong> to add profiles.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: KID PIN
+════════════════════════════════════════════ -->
+<div class="screen" id="kidPinScreen">
+  <div class="nav-bar">
+    <button class="nav-back" onclick="goHome()"></button>
+    <h1 id="kidPinTitle">Enter PIN</h1>
+    <div style="width:60px;"></div>
+  </div>
+  <div class="scroll-body" style="display:flex;flex-direction:column;justify-content:center;flex:1;">
+    <div class="pin-header">
+      <h2 id="kidPinName"></h2>
+      <p>Enter your 4-digit PIN</p>
+    </div>
+    <div class="pin-display" id="kidPinDots">
+      <div class="pin-dot" id="kd0"></div>
+      <div class="pin-dot" id="kd1"></div>
+      <div class="pin-dot" id="kd2"></div>
+      <div class="pin-dot" id="kd3"></div>
+    </div>
+    <div class="pin-error-msg" id="kidPinError"></div>
+    <div class="pin-pad" id="kidPinPad"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: KID TICKETS
+════════════════════════════════════════════ -->
+<div class="screen" id="ticketScreen">
+  <div class="nav-bar">
+    <button class="nav-back" onclick="goHome()"></button>
+    <h1 id="ticketScreenTitle">Your Tickets</h1>
+    <div style="width:60px;"></div>
+  </div>
+  <div class="scroll-body">
+    <div class="ticket-grid" id="ticketGrid"></div>
+    <div class="empty-msg" id="ticketEmpty" style="display:none;">No tickets yet!<br>Ask a parent to earn some. 🎉</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: CONFIRM USE TICKET
+════════════════════════════════════════════ -->
+<div class="screen" id="confirmScreen">
+  <div class="nav-bar">
+    <button class="nav-back" onclick="showTickets()"></button>
+    <h1>Use Ticket?</h1>
+    <div style="width:60px;"></div>
+  </div>
+  <div class="scroll-body">
+    <div class="confirm-card">
+      <div class="confirm-mins" id="confirmMins">30</div>
+      <div class="confirm-unit">minutes</div>
+      <div class="confirm-desc" id="confirmDesc"></div>
+    </div>
+    <div style="margin-top:20px;">
+      <button class="btn btn-primary" onclick="startTimer()">Start timer</button>
+      <button class="btn btn-secondary" onclick="showTickets()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: TIMER
+════════════════════════════════════════════ -->
+<div class="screen" id="timerScreen">
+  <div class="timer-wrap">
+    <div class="timer-name" id="timerName"></div>
+    <div class="timer-clock" id="timerClock">00:00</div>
+    <div class="timer-progress"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
+    <div class="timer-btns">
+      <button class="btn btn-secondary" id="pauseBtn" onclick="togglePause()" style="flex:1;">Pause</button>
+      <button class="btn btn-danger" onclick="cancelTimer()" style="flex:1;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: ALARM
+════════════════════════════════════════════ -->
+<div class="screen" id="alarmScreen">
+  <div class="alarm-wrap">
+    <div class="alarm-icon">⏰</div>
+    <div class="alarm-title" id="alarmTitle">Time's up!</div>
+    <div class="alarm-sub" id="alarmSub">Your screen time is done. Please hand the device to an adult.</div>
+    <button class="btn btn-secondary" style="margin-top:32px;max-width:320px;width:100%;" onclick="goHome()">Done</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: PARENT LOCK
+════════════════════════════════════════════ -->
+<div class="screen" id="parentLockScreen">
+  <div class="nav-bar">
+    <button class="nav-back" onclick="goHome()"></button>
+    <h1>Parent Mode</h1>
+    <div style="width:60px;"></div>
+  </div>
+  <div class="scroll-body" style="display:flex;flex-direction:column;justify-content:center;flex:1;">
+    <div class="pin-header">
+      <h2>Parent Password</h2>
+      <p>Enter your password to continue</p>
+    </div>
+    <div style="max-width:320px;margin:24px auto 0;width:100%;">
+      <input class="form-input" type="password" id="parentPwInput" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')checkParentPw()">
+      <div style="font-size:13px;color:var(--danger);min-height:18px;margin:8px 0 16px;" id="parentPwError"></div>
+      <button class="btn btn-primary" onclick="checkParentPw()">Unlock</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: PARENT DASHBOARD
+════════════════════════════════════════════ -->
+<div class="screen" id="parentScreen">
+  <div class="nav-bar">
+    <button class="nav-back" onclick="goHome()"></button>
+    <h1>Parent Mode</h1>
+    <div style="width:60px;"></div>
+  </div>
+  <div class="scroll-body">
+    <div class="section-label">Kids</div>
+    <div id="parentKidList"></div>
+    <button class="btn btn-secondary" style="margin-top:4px;" onclick="openAddKid()">+ Add kid</button>
+
+    <div class="section-label" style="margin-top:28px;">Parent password</div>
+    <div class="form-field">
+      <label class="form-label">New password</label>
+      <input class="form-input" type="password" id="changePw1" placeholder="New password" autocomplete="new-password">
+    </div>
+    <div class="form-field">
+      <label class="form-label">Confirm password</label>
+      <input class="form-input" type="password" id="changePw2" placeholder="Confirm" autocomplete="new-password">
+    </div>
+    <div style="font-size:13px;color:var(--danger);min-height:18px;margin-bottom:12px;" id="changePwError"></div>
+    <button class="btn btn-secondary" onclick="changeParentPw()">Update password</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SCREEN: MANAGE KID
+════════════════════════════════════════════ -->
+<div class="screen" id="kidManageScreen">
+  <div class="nav-bar">
+    <button class="nav-back" onclick="showParent()"></button>
+    <h1 id="kidManageTitle">Manage</h1>
+    <div style="width:60px;"></div>
+  </div>
+  <div class="scroll-body">
+    <div class="section-label">Tickets</div>
+    <div id="manageTicketList"></div>
+    <div class="empty-msg" id="manageTicketEmpty" style="display:none;padding:16px 0;">No tickets yet.</div>
+
+    <button class="btn btn-secondary" onclick="openAddTicket()">+ Add ticket</button>
+
+    <div class="section-label" style="margin-top:28px;">Color</div>
+    <div class="color-picker" id="manageKidColorPicker"></div>
+
+    <div class="section-label" style="margin-top:8px;">Change PIN</div>
+    <div class="form-field">
+      <input class="form-input" type="password" inputmode="numeric" maxlength="4" id="newPin1" placeholder="New 4-digit PIN" pattern="[0-9]*">
+    </div>
+    <div class="form-field">
+      <input class="form-input" type="password" inputmode="numeric" maxlength="4" id="newPin2" placeholder="Confirm PIN" pattern="[0-9]*">
+    </div>
+    <div style="font-size:13px;color:var(--danger);min-height:18px;margin-bottom:12px;" id="pinChangeError"></div>
+    <button class="btn btn-secondary" onclick="changeKidPin()">Update PIN</button>
+
+    <div style="margin-top:32px;">
+      <button class="btn btn-danger" onclick="deleteKid()">Remove this kid</button>
+    </div>
+  </div>
+</div>
+
+<!-- OVERLAY: Add Kid -->
+<div class="overlay" id="addKidOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>Add a kid</h2>
+    <p class="sheet-sub">They'll use a 4-digit PIN to access their tickets.</p>
+    <div class="form-field">
+      <label class="form-label">Name</label>
+      <input class="form-input" type="text" id="newKidName" placeholder="e.g. Emma" autocomplete="off">
+    </div>
+    <div class="form-field">
+      <label class="form-label">4-digit PIN</label>
+      <input class="form-input" type="password" inputmode="numeric" maxlength="4" id="newKidPin" placeholder="e.g. 1234" pattern="[0-9]*">
+    </div>
+    <div class="form-field">
+      <label class="form-label">Color</label>
+      <div class="color-picker" id="addKidColorPicker"></div>
+    </div>
+    <div style="font-size:13px;color:var(--danger);min-height:18px;margin-bottom:12px;" id="addKidError"></div>
+    <button class="btn btn-primary" onclick="saveNewKid()">Add kid</button>
+    <button class="btn btn-secondary" style="margin-top:10px;" onclick="closeAddKid()">Cancel</button>
+  </div>
+</div>
+
+<!-- OVERLAY: Add Ticket -->
+<div class="overlay" id="addTicketOverlay">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <h2>Add ticket</h2>
+    <p class="sheet-sub" id="addTicketSub">Add a screen time ticket.</p>
+    <div class="form-field">
+      <label class="form-label">Duration</label>
+      <select class="form-input" id="newTicketMins">
+        <option value="10">10 minutes</option>
+        <option value="15">15 minutes</option>
+        <option value="20">20 minutes</option>
+        <option value="30" selected>30 minutes</option>
+        <option value="45">45 minutes</option>
+        <option value="60">60 minutes</option>
+        <option value="90">90 minutes</option>
+        <option value="120">2 hours</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label class="form-label">Label (optional)</label>
+      <input class="form-input" type="text" id="newTicketLabel" placeholder="e.g. Weekend bonus">
+    </div>
+    <button class="btn btn-primary" onclick="saveNewTicket()">Add ticket</button>
+    <button class="btn btn-secondary" style="margin-top:10px;" onclick="closeAddTicket()">Cancel</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+var state = {
+  parentPw: null,
+  kids: []
+};
+
+var currentKidId = null;
+var selectedTicketId = null;
+var timerInterval = null;
+var remainingSeconds = 0;
+var totalSeconds = 0;
+var paused = false;
+var currentManageKidId = null;
+var kidPinBuffer = '';
+
+// ══════════════════════════════════════
+// PERSISTENCE
+// ══════════════════════════════════════
+function load() {
+  try {
+    const raw = localStorage.getItem('screentime_v2');
+    if (raw) state = JSON.parse(raw);
+  } catch(e) {}
+}
+function save() {
+  try { localStorage.setItem('screentime_v2', JSON.stringify(state)); } catch(e) {}
+}
+
+// ══════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════
+function uid() { return Math.random().toString(36).slice(2, 10); }
+function getEl(id) { return document.getElementById(id); }
+function getKid(id) { return state.kids.find(k => k.id === id); }
+function initials(name) { return name.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2); }
+
+var KID_COLORS = [
+  { name: 'Red',          bg: '#ffe0e0', fg: '#a32020' },
+  { name: 'Red-orange',   bg: '#ffe5d6', fg: '#b83a10' },
+  { name: 'Orange',       bg: '#ffebd4', fg: '#b85400' },
+  { name: 'Orange-yellow',bg: '#fff3cc', fg: '#946800' },
+  { name: 'Yellow',       bg: '#fffacc', fg: '#7a6200' },
+  { name: 'Chartreuse',   bg: '#eefacc', fg: '#4a6e00' },
+  { name: 'Green',        bg: '#ddf4e2', fg: '#1a6e3a' },
+  { name: 'Turquoise',    bg: '#d4f4f0', fg: '#0e6b62' },
+  { name: 'Blue',         bg: '#daeeff', fg: '#1458a8' },
+  { name: 'Indigo',       bg: '#e0e8ff', fg: '#2a3eaa' },
+  { name: 'Violet',       bg: '#ede0ff', fg: '#6230b8' },
+  { name: 'Pink',         bg: '#ffe0f5', fg: '#a0207a' }
+];
+
+function avatarStyle(colorIndex) {
+  var c = KID_COLORS[colorIndex != null ? colorIndex : 0];
+  return 'background:' + c.bg + ';color:' + c.fg + ';';
+}
+
+function buildColorPicker(containerId, selectedIndex, onSelect) {
+  var container = getEl(containerId);
+  container.innerHTML = '';
+  KID_COLORS.forEach(function(c, i) {
+    var swatch = document.createElement('div');
+    swatch.className = 'color-swatch' + (i === selectedIndex ? ' selected' : '');
+    swatch.style.background = c.bg;
+    swatch.style.outline = '1.5px solid ' + c.fg + '44';
+    swatch.title = c.name;
+    swatch.onclick = function() {
+      container.querySelectorAll('.color-swatch').forEach(function(s){ s.classList.remove('selected'); });
+      swatch.classList.add('selected');
+      onSelect(i);
+    };
+    container.appendChild(swatch);
+  });
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  getEl(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+// ══════════════════════════════════════
+// SETUP
+// ══════════════════════════════════════
+function finishSetup() {
+  const p1 = getEl('setupPw1').value;
+  const p2 = getEl('setupPw2').value;
+  const err = getEl('setupError');
+  if (!p1) { err.textContent = 'Please enter a password.'; return; }
+  if (p1 !== p2) { err.textContent = 'Passwords do not match.'; return; }
+  state.parentPw = p1;
+  save();
+  renderHome();
+  showScreen('homeScreen');
+}
+
+// ══════════════════════════════════════
+// HOME
+// ══════════════════════════════════════
+function goHome() {
+  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  currentKidId = null;
+  renderHome();
+  showScreen('homeScreen');
+}
+
+function renderHome() {
+  const list = getEl('kidList');
+  const empty = getEl('homeEmpty');
+  list.innerHTML = '';
+  if (!state.kids.length) { empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  state.kids.forEach((kid, i) => {
+    const count = kid.tickets ? kid.tickets.length : 0;
+    const div = document.createElement('div');
+    div.className = 'kid-card';
+    div.innerHTML = `
+      <div class="kid-avatar" style="${avatarStyle(kid.colorIndex)}">${initials(kid.name)}</div>
+      <div class="kid-info">
+        <div class="kid-name">${kid.name}</div>
+        <div class="kid-tickets">${count} ticket${count !== 1 ? 's' : ''} available</div>
+      </div>
+      <div class="kid-chevron">›</div>`;
+    div.onclick = () => openKidPin(kid.id);
+    list.appendChild(div);
+  });
+}
+
+// ══════════════════════════════════════
+// KID PIN
+// ══════════════════════════════════════
+function openKidPin(kidId) {
+  currentKidId = kidId;
+  kidPinBuffer = '';
+  const kid = getKid(kidId);
+  getEl('kidPinName').textContent = kid.name;
+  getEl('kidPinError').textContent = '';
+  updateKidPinDots();
+  showScreen('kidPinScreen');
+  buildPinPad('kidPinPad', kidPinPress, kidPinDel);
+}
+
+function buildPinPad(padId, pressFn, delFn) {
+  const pad = getEl(padId);
+  pad.innerHTML = '';
+  [1,2,3,4,5,6,7,8,9,'',0,'del'].forEach(k => {
+    const btn = document.createElement('div');
+    btn.className = 'pin-key' + (k === 'del' ? ' del' : '');
+    if (k === '') { btn.style.visibility = 'hidden'; pad.appendChild(btn); return; }
+    btn.textContent = k === 'del' ? '⌫' : k;
+    btn.onclick = () => k === 'del' ? delFn() : pressFn(String(k));
+    pad.appendChild(btn);
+  });
+}
+
+function kidPinPress(digit) {
+  if (kidPinBuffer.length >= 4) return;
+  kidPinBuffer += digit;
+  updateKidPinDots();
+  if (kidPinBuffer.length === 4) {
+    setTimeout(validateKidPin, 120);
+  }
+}
+
+function kidPinDel() {
+  kidPinBuffer = kidPinBuffer.slice(0, -1);
+  updateKidPinDots();
+}
+
+function updateKidPinDots() {
+  for (let i = 0; i < 4; i++) {
+    const dot = getEl('kd' + i);
+    dot.classList.toggle('filled', i < kidPinBuffer.length);
+    dot.classList.remove('error');
+  }
+}
+
+function validateKidPin() {
+  const kid = getKid(currentKidId);
+  if (kidPinBuffer === kid.pin) {
+    showTickets();
+  } else {
+    for (let i = 0; i < 4; i++) getEl('kd' + i).classList.add('error');
+    getEl('kidPinError').textContent = 'Incorrect PIN — try again';
+    setTimeout(() => {
+      kidPinBuffer = '';
+      updateKidPinDots();
+      getEl('kidPinError').textContent = '';
+    }, 900);
+  }
+}
+
+// ══════════════════════════════════════
+// TICKETS
+// ══════════════════════════════════════
+function showTickets() {
+  const kid = getKid(currentKidId);
+  getEl('ticketScreenTitle').textContent = kid.name + "'s Tickets";
+  renderTicketGrid();
+  showScreen('ticketScreen');
+}
+
+function renderTicketGrid() {
+  const kid = getKid(currentKidId);
+  const grid = getEl('ticketGrid');
+  const empty = getEl('ticketEmpty');
+  grid.innerHTML = '';
+  const tickets = kid.tickets || [];
+  if (!tickets.length) { empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  tickets.forEach(t => {
+    const btn = document.createElement('div');
+    btn.className = 'ticket-btn';
+    btn.innerHTML = `<div class="ticket-mins">${t.mins}</div><div class="ticket-unit">${t.label || 'minutes'}</div>`;
+    btn.onclick = () => confirmTicket(t.id);
+    grid.appendChild(btn);
+  });
+}
+
+function confirmTicket(ticketId) {
+  selectedTicketId = ticketId;
+  const kid = getKid(currentKidId);
+  const ticket = kid.tickets.find(t => t.id === ticketId);
+  getEl('confirmMins').textContent = ticket.mins;
+  getEl('confirmDesc').textContent = `This will start a ${ticket.mins}-minute countdown for ${kid.name}. The ticket will be used once you start.`;
+  showScreen('confirmScreen');
+}
+
+// ══════════════════════════════════════
+// TIMER
+// ══════════════════════════════════════
+function startTimer() {
+  const kid = getKid(currentKidId);
+  const idx = kid.tickets.findIndex(t => t.id === selectedTicketId);
+  const ticket = kid.tickets[idx];
+  kid.tickets.splice(idx, 1);
+  save();
+
+  totalSeconds = ticket.mins * 60;
+  remainingSeconds = totalSeconds;
+  paused = false;
+  getEl('timerName').textContent = kid.name;
+  getEl('pauseBtn').textContent = 'Pause';
+  updateTimerDisplay();
+  showScreen('timerScreen');
+  timerInterval = setInterval(tick, 1000);
+}
+
+function tick() {
+  if (paused) return;
+  remainingSeconds--;
+  updateTimerDisplay();
+  if (remainingSeconds <= 0) {
+    clearInterval(timerInterval); timerInterval = null;
+    triggerAlarm();
+  }
+}
+
+function updateTimerDisplay() {
+  const m = Math.floor(remainingSeconds / 60);
+  const s = remainingSeconds % 60;
+  getEl('timerClock').textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  const pct = totalSeconds > 0 ? (remainingSeconds / totalSeconds) * 100 : 0;
+  const fill = getEl('timerFill');
+  fill.style.width = pct + '%';
+  fill.style.background = remainingSeconds <= 60 ? '#c0392b' : remainingSeconds <= totalSeconds * 0.25 ? '#b8560a' : 'var(--text)';
+}
+
+function togglePause() {
+  paused = !paused;
+  getEl('pauseBtn').textContent = paused ? 'Resume' : 'Pause';
+}
+
+function cancelTimer() {
+  if (confirm('Cancel the timer? The ticket will be gone.')) {
+    clearInterval(timerInterval); timerInterval = null;
+    goHome();
+  }
+}
+
+function triggerAlarm() {
+  const kid = getKid(currentKidId);
+  getEl('alarmTitle').textContent = 'Time\'s up, ' + kid.name + '!';
+  getEl('alarmSub').textContent = 'Your screen time ticket is done. Please hand the device to an adult.';
+  playAlarm();
+  showScreen('alarmScreen');
+}
+
+function playAlarm() {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    const ctx = new AC();
+    [[0,880],[0.5,660],[1,880],[1.5,660],[2,880],[2.5,660],[3,880]].forEach(([t,f]) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = f; o.type = 'sine';
+      g.gain.setValueAtTime(0.35, ctx.currentTime + t);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.4);
+      o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 0.45);
+    });
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════
+// PARENT LOCK
+// ══════════════════════════════════════
+function openParentLock() {
+  getEl('parentPwInput').value = '';
+  getEl('parentPwError').textContent = '';
+  showScreen('parentLockScreen');
+  setTimeout(() => getEl('parentPwInput').focus(), 100);
+}
+
+function checkParentPw() {
+  const val = getEl('parentPwInput').value;
+  if (val === state.parentPw) {
+    renderParentDashboard();
+    showScreen('parentScreen');
+  } else {
+    getEl('parentPwError').textContent = 'Incorrect password';
+    getEl('parentPwInput').value = '';
+  }
+}
+
+// ══════════════════════════════════════
+// PARENT DASHBOARD
+// ══════════════════════════════════════
+function showParent() {
+  renderParentDashboard();
+  showScreen('parentScreen');
+}
+
+function renderParentDashboard() {
+  const list = getEl('parentKidList');
+  list.innerHTML = '';
+  state.kids.forEach((kid, i) => {
+    const count = kid.tickets ? kid.tickets.length : 0;
+    const row = document.createElement('div');
+    row.className = 'parent-kid-row';
+    row.innerHTML = `
+      <div class="parent-kid-avatar" style="${avatarStyle(kid.colorIndex)}">${initials(kid.name)}</div>
+      <div class="parent-kid-info">
+        <div class="parent-kid-name">${kid.name}</div>
+        <div class="parent-kid-meta">${count} ticket${count!==1?'s':''} • PIN set</div>
+      </div>
+      <div class="parent-kid-actions">
+        <button class="icon-btn" onclick="openKidManage('${kid.id}')" title="Manage">✏️</button>
+      </div>`;
+    list.appendChild(row);
+  });
+}
+
+function changeParentPw() {
+  const p1 = getEl('changePw1').value;
+  const p2 = getEl('changePw2').value;
+  const err = getEl('changePwError');
+  if (!p1) { err.textContent = 'Enter a new password.'; return; }
+  if (p1 !== p2) { err.textContent = 'Passwords do not match.'; return; }
+  state.parentPw = p1; save();
+  err.style.color = 'var(--green)';
+  err.textContent = 'Password updated!';
+  getEl('changePw1').value = ''; getEl('changePw2').value = '';
+  setTimeout(() => { err.textContent = ''; err.style.color = 'var(--danger)'; }, 2500);
+}
+
+// ══════════════════════════════════════
+// ADD KID OVERLAY
+// ══════════════════════════════════════
+var newKidColorIndex = 0;
+
+function openAddKid() {
+  getEl('newKidName').value = ''; getEl('newKidPin').value = ''; getEl('addKidError').textContent = '';
+  newKidColorIndex = 0;
+  buildColorPicker('addKidColorPicker', newKidColorIndex, function(i){ newKidColorIndex = i; });
+  getEl('addKidOverlay').classList.add('open');
+  setTimeout(() => getEl('newKidName').focus(), 100);
+}
+function closeAddKid() { getEl('addKidOverlay').classList.remove('open'); }
+
+function saveNewKid() {
+  const name = getEl('newKidName').value.trim();
+  const pin = getEl('newKidPin').value.trim();
+  const err = getEl('addKidError');
+  if (!name) { err.textContent = 'Enter a name.'; return; }
+  if (!/^\d{4}$/.test(pin)) { err.textContent = 'PIN must be exactly 4 digits.'; return; }
+  state.kids.push({ id: uid(), name, pin, colorIndex: newKidColorIndex, tickets: [] });
+  save(); closeAddKid(); renderParentDashboard();
+}
+
+// ══════════════════════════════════════
+// MANAGE KID
+// ══════════════════════════════════════
+function openKidManage(kidId) {
+  currentManageKidId = kidId;
+  const kid = getKid(kidId);
+  getEl('kidManageTitle').textContent = kid.name;
+  getEl('newPin1').value = ''; getEl('newPin2').value = ''; getEl('pinChangeError').textContent = '';
+  buildColorPicker('manageKidColorPicker', kid.colorIndex || 0, function(i) {
+    getKid(currentManageKidId).colorIndex = i;
+    save();
+    renderParentDashboard();
+    renderHome();
+  });
+  renderManageTickets();
+  showScreen('kidManageScreen');
+}
+
+function renderManageTickets() {
+  const kid = getKid(currentManageKidId);
+  const list = getEl('manageTicketList');
+  const empty = getEl('manageTicketEmpty');
+  list.innerHTML = '';
+  const tickets = kid.tickets || [];
+  if (!tickets.length) { empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  tickets.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'ticket-item';
+    div.innerHTML = `
+      <div>
+        <div class="ticket-item-left">${t.mins} minutes</div>
+        ${t.label ? `<div class="ticket-item-meta">${t.label}</div>` : ''}
+      </div>
+      <button class="icon-btn danger" onclick="deleteTicket('${t.id}')">✕</button>`;
+    list.appendChild(div);
+  });
+}
+
+function deleteTicket(ticketId) {
+  const kid = getKid(currentManageKidId);
+  kid.tickets = kid.tickets.filter(t => t.id !== ticketId);
+  save(); renderManageTickets();
+}
+
+function changeKidPin() {
+  const p1 = getEl('newPin1').value.trim();
+  const p2 = getEl('newPin2').value.trim();
+  const err = getEl('pinChangeError');
+  if (!/^\d{4}$/.test(p1)) { err.textContent = 'PIN must be exactly 4 digits.'; return; }
+  if (p1 !== p2) { err.textContent = 'PINs do not match.'; return; }
+  getKid(currentManageKidId).pin = p1; save();
+  err.style.color = 'var(--green)';
+  err.textContent = 'PIN updated!';
+  getEl('newPin1').value = ''; getEl('newPin2').value = '';
+  setTimeout(() => { err.textContent = ''; err.style.color = 'var(--danger)'; }, 2500);
+}
+
+function deleteKid() {
+  const kid = getKid(currentManageKidId);
+  if (confirm(`Remove ${kid.name}? All their tickets will be deleted.`)) {
+    state.kids = state.kids.filter(k => k.id !== currentManageKidId);
+    save(); showParent();
+  }
+}
+
+// ══════════════════════════════════════
+// ADD TICKET OVERLAY
+// ══════════════════════════════════════
+function openAddTicket() {
+  const kid = getKid(currentManageKidId);
+  getEl('addTicketSub').textContent = `Add a screen time ticket for ${kid.name}.`;
+  getEl('newTicketMins').value = '30'; getEl('newTicketLabel').value = '';
+  getEl('addTicketOverlay').classList.add('open');
+}
+function closeAddTicket() { getEl('addTicketOverlay').classList.remove('open'); }
+
+function saveNewTicket() {
+  const mins = parseInt(getEl('newTicketMins').value);
+  const label = getEl('newTicketLabel').value.trim();
+  const kid = getKid(currentManageKidId);
+  if (!kid.tickets) kid.tickets = [];
+  kid.tickets.push({ id: uid(), mins, label });
+  save(); closeAddTicket(); renderManageTickets();
+}
+
+// ══════════════════════════════════════
+// MANIFEST (inline PWA)
+// ══════════════════════════════════════
+function injectManifest() {
+  const manifest = {
+    name: 'Screen Time',
+    short_name: 'Screen Time',
+    start_url: '.',
+    display: 'standalone',
+    background_color: '#f7f6f2',
+    theme_color: '#ffffff',
+    icons: [{
+      src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%231a1a1a'/%3E%3Ctext x='256' y='340' font-size='260' text-anchor='middle' font-family='system-ui' fill='white'%3E🎟%3C/text%3E%3C/svg%3E",
+      sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable'
+    }]
+  };
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+  const url = URL.createObjectURL(blob);
+  getEl('manifestLink').href = url;
+}
+
+// ══════════════════════════════════════
+// EXPOSE TO WINDOW (fixes onclick scoping)
+// ══════════════════════════════════════
+window.finishSetup = finishSetup;
+window.goHome = goHome;
+window.openParentLock = openParentLock;
+window.checkParentPw = checkParentPw;
+window.openAddKid = openAddKid;
+window.closeAddKid = closeAddKid;
+window.saveNewKid = saveNewKid;
+window.openKidManage = openKidManage;
+window.deleteKid = deleteKid;
+window.changeKidPin = changeKidPin;
+window.changeParentPw = changeParentPw;
+window.openAddTicket = openAddTicket;
+window.closeAddTicket = closeAddTicket;
+window.saveNewTicket = saveNewTicket;
+window.deleteTicket = deleteTicket;
+window.showTickets = showTickets;
+window.confirmTicket = confirmTicket;
+window.startTimer = startTimer;
+window.togglePause = togglePause;
+window.cancelTimer = cancelTimer;
+window.showParent = showParent;
+window.kidPinPress = kidPinPress;
+window.kidPinDel = kidPinDel;
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+load();
+injectManifest();
+
+if (!state.parentPw) {
+  showScreen('setupScreen');
+} else {
+  renderHome();
+  showScreen('homeScreen');
+}
+
+// Close overlays on outside tap
+['addKidOverlay','addTicketOverlay'].forEach(function(id) {
+  getEl(id).addEventListener('click', function(e) {
+    if (e.target === this) this.classList.remove('open');
+  });
+});
+</script>
+</body>
+</html>
