@@ -407,14 +407,13 @@
 // FIREBASE CONFIG – PASTE YOURS HERE
 // ══════════════════════════════════════
 const firebaseConfig = {
-    apiKey: "AIzaSyC0BmZh4gbIj4NzhOgvwI9qUfZ0MeP-Bqc",
-    authDomain: "screen-time-tracker-2cffd.firebaseapp.com",
-    projectId: "screen-time-tracker-2cffd",
-    storageBucket: "screen-time-tracker-2cffd.firebasestorage.app",
-    messagingSenderId: "675135477951",
-    appId: "1:675135477951:web:36525da7cccd791059ce0a"
-  };
-
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
 
 // ══════════════════════════════════════
 // STATE
@@ -437,6 +436,8 @@ var parentPinBuffer = '';
 var alarmTimerId = null;
 var isSignUpMode = true;
 var isSaving = false;
+var wakeLock = null;
+var notificationPermissionAsked = false;
 
 // ══════════════════════════════════════
 // FIREBASE INIT
@@ -801,7 +802,48 @@ function confirmTicket(ticketId) {
 
 // ══════════════════════════════════════
 // MULTI TIMERS (timestamp based for accurate sync)
+// + Wake Lock + System Notifications
 // ══════════════════════════════════════
+async function requestNotificationPermission() {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted' || Notification.permission === 'denied') return;
+  if (notificationPermissionAsked) return;
+  notificationPermissionAsked = true;
+  try {
+    await Notification.requestPermission();
+  } catch (e) {}
+}
+
+async function requestWakeLock() {
+  if (!('wakeLock' in navigator)) return;
+  try {
+    if (wakeLock) return;
+    wakeLock = await navigator.wakeLock.request('screen');
+    wakeLock.addEventListener('release', () => {
+      wakeLock = null;
+    });
+  } catch (e) {
+    // Permission denied or not supported
+    wakeLock = null;
+  }
+}
+
+function releaseWakeLock() {
+  if (wakeLock) {
+    wakeLock.release().catch(() => {});
+    wakeLock = null;
+  }
+}
+
+function updateWakeLock() {
+  const anyRunning = state.activeTimers.some(t => !t.finished && !t.paused);
+  if (anyRunning) {
+    requestWakeLock();
+  } else {
+    releaseWakeLock();
+  }
+}
+
 function startTimer() {
   const kid = getKid(currentKidId);
   const idx = kid.tickets.findIndex(t => t.id === selectedTicketId);
@@ -822,6 +864,10 @@ function startTimer() {
   };
   state.activeTimers.push(timer);
   saveState();
+
+  // Ask for notification permission the first time a timer is started
+  requestNotificationPermission();
+  updateWakeLock();
   ensureTimerLoop();
   showActiveTimers();
 }
@@ -853,11 +899,12 @@ function tickAll() {
     renderActiveTimersList();
   }
   renderHome();
+  updateWakeLock();
 
   if (justFinished) {
     alarmTimerId = justFinished.id;
-    playAlarm();
-    if (getEl('timerScreen').classList.contains('active')) {
+    triggerAlarm(justFinished);
+    if (getEl('timerScreen').classList.contains('active') || document.visibilityState === 'visible') {
       showAlarmFor(justFinished);
     }
   }
@@ -933,6 +980,7 @@ function toggleTimerPause(timerId) {
   }
   saveState();
   renderActiveTimersList();
+  updateWakeLock();
   ensureTimerLoop();
 }
 
@@ -942,6 +990,7 @@ function cancelOneTimer(timerId) {
   saveState();
   renderActiveTimersList();
   renderHome();
+  updateWakeLock();
 }
 
 function dismissFinishedTimer(timerId) {
@@ -949,6 +998,7 @@ function dismissFinishedTimer(timerId) {
   saveState();
   renderActiveTimersList();
   renderHome();
+  updateWakeLock();
   if (state.activeTimers.length === 0) goHome();
 }
 
@@ -964,6 +1014,7 @@ function dismissAlarm() {
     alarmTimerId = null;
     saveState();
   }
+  updateWakeLock();
   if (state.activeTimers.some(t => !t.finished)) {
     showActiveTimers();
   } else {
@@ -971,21 +1022,77 @@ function dismissAlarm() {
   }
 }
 
-function playAlarm() {
+function triggerAlarm(timer) {
+  // 1. Play sound (works best when app is visible)
+  playAlarmSound();
+
+  // 2. Vibrate (Android mainly)
+  try {
+    if (navigator.vibrate) {
+      navigator.vibrate([400, 200, 400, 200, 400, 200, 600]);
+    }
+  } catch (e) {}
+
+  // 3. System notification (works even if another app is open)
+  showSystemNotification(timer);
+}
+
+function playAlarmSound() {
   try {
     const AC = window.AudioContext || window.webkitAudioContext;
     const ctx = new AC();
-    [[0,880],[0.5,660],[1,880],[1.5,660],[2,880],[2.5,660],[3,880]].forEach(([t,f]) => {
+    // Longer, more insistent pattern
+    const notes = [
+      [0, 880], [0.4, 660], [0.8, 880], [1.2, 660],
+      [1.6, 880], [2.0, 660], [2.4, 880], [2.8, 660],
+      [3.2, 988], [3.6, 880], [4.0, 988], [4.4, 880]
+    ];
+    notes.forEach(([t, f]) => {
       const o = ctx.createOscillator();
       const g = ctx.createGain();
       o.connect(g); g.connect(ctx.destination);
       o.frequency.value = f; o.type = 'sine';
-      g.gain.setValueAtTime(0.35, ctx.currentTime + t);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.4);
-      o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 0.45);
+      g.gain.setValueAtTime(0.4, ctx.currentTime + t);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + t + 0.35);
+      o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 0.4);
     });
-  } catch(e) {}
+  } catch (e) {}
 }
+
+function showSystemNotification(timer) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission !== 'granted') return;
+
+  try {
+    const n = new Notification("Time's up! ⏰", {
+      body: timer.kidName + "'s screen time is finished. Please hand the device to an adult.",
+      icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🎟%3C/text%3E%3C/svg%3E",
+      badge: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E⏰%3C/text%3E%3C/svg%3E",
+      tag: 'screentime-alarm-' + timer.id,
+      requireInteraction: true,   // stays until user dismisses
+      silent: false,
+      vibrate: [400, 200, 400, 200, 400]
+    });
+
+    n.onclick = function () {
+      window.focus();
+      showAlarmFor(timer);
+      n.close();
+    };
+
+    // Auto-close after 30 seconds just in case
+    setTimeout(() => n.close(), 30000);
+  } catch (e) {
+    console.log('Notification failed', e);
+  }
+}
+
+// Re-acquire wake lock if the page becomes visible again
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    updateWakeLock();
+  }
+});
 
 // ══════════════════════════════════════
 // PARENT LOCK (local 4-digit PIN)
