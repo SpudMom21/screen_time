@@ -33,10 +33,8 @@
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; background: var(--bg); font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif; color: var(--text); overscroll-behavior: none; }
   body { display: flex; flex-direction: column; }
-
   .screen { display: none; flex-direction: column; min-height: 100dvh; padding: 0 0 env(safe-area-inset-bottom); }
   .screen.active { display: flex; }
-
   /* NAV BAR */
   .nav-bar { display: flex; align-items: center; justify-content: space-between; padding: 56px 20px 16px; background: var(--surface); border-bottom: 0.5px solid var(--border); }
   .nav-bar h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
@@ -44,14 +42,11 @@
   .nav-bar .nav-action:hover { color: var(--text); }
   .nav-back { font-size: 14px; color: var(--text-muted); background: none; border: none; font-family: inherit; cursor: pointer; display: flex; align-items: center; gap: 4px; }
   .nav-back:before { content: '‹'; font-size: 20px; line-height: 1; }
-
   /* SCROLL BODY */
   .scroll-body { flex: 1; overflow-y: auto; padding: 16px 20px 32px; }
-
   /* SECTION LABEL */
   .section-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin: 20px 0 8px; }
   .section-label:first-child { margin-top: 0; }
-
   /* KID LIST */
   .kid-list { display: flex; flex-direction: column; gap: 10px; }
   .kid-card { background: var(--surface); border-radius: var(--radius); border: 0.5px solid var(--border); padding: 16px; cursor: pointer; display: flex; align-items: center; gap: 14px; box-shadow: var(--shadow); transition: transform 0.1s; }
@@ -61,21 +56,40 @@
   .kid-name { font-size: 16px; font-weight: 500; }
   .kid-tickets { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
   .kid-chevron { color: var(--text-hint); font-size: 18px; }
-
-  /* PIN PAD */
+  /* PIN PAD - now square */
   .pin-display { display: flex; gap: 14px; justify-content: center; margin: 32px 0 28px; }
   .pin-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--border-strong); transition: background 0.15s, border-color 0.15s; }
   .pin-dot.filled { background: var(--text); border-color: var(--text); }
   .pin-dot.error { background: var(--danger); border-color: var(--danger); }
-  .pin-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 280px; margin: 0 auto; }
-  .pin-key { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); height: 68px; font-size: 22px; font-weight: 400; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.1s; box-shadow: var(--shadow); user-select: none; }
+  .pin-pad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    max-width: 280px;
+    width: 100%;
+    margin: 0 auto;
+  }
+  .pin-key {
+    aspect-ratio: 1 / 1;
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 24px;
+    font-weight: 400;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.1s;
+    box-shadow: var(--shadow);
+    user-select: none;
+  }
   .pin-key:active { background: var(--accent-light); }
-  .pin-key.del { font-size: 18px; }
+  .pin-key.del { font-size: 20px; }
   .pin-header { text-align: center; margin-bottom: 8px; }
   .pin-header h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; }
   .pin-header p { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
   .pin-error-msg { text-align: center; font-size: 13px; color: var(--danger); height: 18px; margin-bottom: 8px; }
-
   /* TICKET GRID */
   .ticket-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .ticket-btn { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 18px 14px; cursor: pointer; text-align: center; box-shadow: var(--shadow); transition: transform 0.1s; }
@@ -83,28 +97,80 @@
   .ticket-mins { font-size: 34px; font-weight: 600; letter-spacing: -1px; }
   .ticket-unit { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
   .empty-msg { text-align: center; padding: 40px 20px; color: var(--text-muted); font-size: 15px; line-height: 1.6; }
-
   /* CONFIRM */
   .confirm-card { background: var(--surface); border-radius: var(--radius); border: 0.5px solid var(--border); padding: 24px; text-align: center; box-shadow: var(--shadow); }
   .confirm-mins { font-size: 64px; font-weight: 600; letter-spacing: -3px; line-height: 1; }
   .confirm-unit { font-size: 16px; color: var(--text-muted); margin-top: 4px; }
   .confirm-desc { font-size: 14px; color: var(--text-muted); margin-top: 16px; line-height: 1.5; }
-
-  /* TIMER */
-  .timer-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; }
-  .timer-name { font-size: 14px; color: var(--text-muted); margin-bottom: 8px; }
-  .timer-clock { font-size: 80px; font-weight: 600; letter-spacing: -4px; font-variant-numeric: tabular-nums; line-height: 1; }
-  .timer-progress { width: 100%; max-width: 320px; height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin: 28px 0; }
-  .timer-fill { height: 100%; border-radius: 3px; background: var(--text); transition: width 1s linear, background 0.5s; }
-  .timer-btns { display: flex; gap: 12px; width: 100%; max-width: 320px; }
-
+  /* MULTI TIMER */
+  .timer-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 0.5px solid var(--border);
+    padding: 18px 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+  }
+  .timer-card.finished {
+    border-color: var(--danger);
+    background: var(--danger-bg);
+  }
+  .timer-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .timer-kid-name {
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .timer-status {
+    font-size: 12px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .timer-status.running { background: var(--green-bg); color: var(--green); }
+  .timer-status.paused { background: var(--warn-bg); color: var(--warn); }
+  .timer-status.done { background: var(--danger-bg); color: var(--danger); }
+  .timer-clock-big {
+    font-size: 42px;
+    font-weight: 600;
+    letter-spacing: -2px;
+    font-variant-numeric: tabular-nums;
+    line-height: 1.1;
+    margin: 4px 0 12px;
+  }
+  .timer-progress {
+    width: 100%;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .timer-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: var(--text);
+    transition: width 1s linear, background 0.5s;
+  }
+  .timer-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .timer-actions .btn {
+    flex: 1;
+    padding: 11px;
+    font-size: 14px;
+  }
   /* ALARM */
   .alarm-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; text-align: center; }
   .alarm-icon { font-size: 72px; margin-bottom: 16px; animation: ring 0.5s ease-in-out infinite alternate; }
   @keyframes ring { from { transform: rotate(-8deg); } to { transform: rotate(8deg); } }
   .alarm-title { font-size: 28px; font-weight: 600; letter-spacing: -0.5px; }
   .alarm-sub { font-size: 15px; color: var(--text-muted); margin-top: 8px; line-height: 1.5; max-width: 280px; }
-
   /* BUTTONS */
   .btn { display: block; width: 100%; padding: 15px; border-radius: var(--radius); font-size: 16px; font-weight: 500; font-family: inherit; cursor: pointer; border: none; transition: opacity 0.1s, transform 0.1s; }
   .btn:active { transform: scale(0.98); }
@@ -112,14 +178,12 @@
   .btn-secondary { background: var(--accent-light); color: var(--text); }
   .btn-danger { background: var(--danger-bg); color: var(--danger); }
   .btn + .btn { margin-top: 10px; }
-
   /* FORMS */
   .form-field { margin-bottom: 14px; }
   .form-label { font-size: 13px; color: var(--text-muted); margin-bottom: 6px; display: block; }
   .form-input { width: 100%; padding: 13px 14px; border: 0.5px solid var(--border-strong); border-radius: var(--radius-sm); font-size: 16px; font-family: inherit; background: var(--surface); color: var(--text); outline: none; }
   .form-input:focus { border-color: var(--text); }
   select.form-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
-
   /* PARENT SECTION */
   .parent-kid-row { display: flex; align-items: center; gap: 12px; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 8px; }
   .parent-kid-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; flex-shrink: 0; }
@@ -129,23 +193,19 @@
   .parent-kid-actions { display: flex; gap: 6px; }
   .icon-btn { background: var(--accent-light); border: none; border-radius: var(--radius-sm); width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 15px; }
   .icon-btn.danger { background: var(--danger-bg); }
-
   /* TICKET ITEMS */
   .ticket-item { display: flex; align-items: center; justify-content: space-between; background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 6px; }
   .ticket-item-left { font-size: 14px; }
   .ticket-item-meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
-
   /* COLOR SWATCHES */
   .color-picker { display: flex; flex-wrap: wrap; gap: 10px; margin: 8px 0 16px; }
   .color-swatch { width: 32px; height: 32px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; transition: transform 0.1s, border-color 0.1s; flex-shrink: 0; }
   .color-swatch:hover { transform: scale(1.15); }
   .color-swatch.selected { border-color: var(--text); transform: scale(1.15); }
-
   /* BADGE */
   .badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 20px; }
   .badge-green { background: var(--green-bg); color: var(--green); }
   .badge-warn { background: var(--warn-bg); color: var(--warn); }
-
   /* MODAL OVERLAY */
   .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; align-items: flex-end; justify-content: center; z-index: 200; }
   .overlay.open { display: flex; }
@@ -153,16 +213,43 @@
   .sheet-handle { width: 36px; height: 4px; background: var(--border-strong); border-radius: 2px; margin: 0 auto 20px; }
   .sheet h2 { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
   .sheet .sheet-sub { font-size: 14px; color: var(--text-muted); margin-bottom: 20px; }
-
   /* SETUP WELCOME */
   .welcome-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; text-align: center; }
   .welcome-icon { font-size: 64px; margin-bottom: 20px; }
   .welcome-wrap h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 8px; }
   .welcome-wrap p { font-size: 15px; color: var(--text-muted); line-height: 1.6; margin-bottom: 32px; max-width: 300px; }
+  /* Active timers badge on home */
+  .active-timers-banner {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+  }
+  .active-timers-banner:active { transform: scale(0.98); }
+  .active-timers-left { display: flex; align-items: center; gap: 10px; }
+  .active-timers-count {
+    background: var(--text);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .active-timers-text { font-size: 15px; font-weight: 500; }
+  .active-timers-sub { font-size: 12px; color: var(--text-muted); }
 </style>
 </head>
 <body>
-
 <!-- ═══════════════════════════════════════════
      SCREEN: SETUP (first launch)
 ════════════════════════════════════════════ -->
@@ -185,7 +272,6 @@
     </div>
   </div>
 </div>
-
 <!-- ═══════════════════════════════════════════
      SCREEN: HOME — Kid selector
 ════════════════════════════════════════════ -->
@@ -195,12 +281,21 @@
     <button class="nav-action" onclick="openParentLock()">Parent ›</button>
   </div>
   <div class="scroll-body">
+    <div id="activeTimersBanner" style="display:none;" class="active-timers-banner" onclick="showActiveTimers()">
+      <div class="active-timers-left">
+        <div class="active-timers-count" id="activeTimersCount">0</div>
+        <div>
+          <div class="active-timers-text">Active timers</div>
+          <div class="active-timers-sub" id="activeTimersSub">Tap to view</div>
+        </div>
+      </div>
+      <div style="color:var(--text-hint);font-size:18px;">›</div>
+    </div>
     <div class="section-label">Who are you?</div>
     <div class="kid-list" id="kidList"></div>
     <div class="empty-msg" id="homeEmpty" style="display:none;">No kids set up yet.<br>Tap <strong>Parent</strong> to add profiles.</div>
   </div>
 </div>
-
 <!-- ═══════════════════════════════════════════
      SCREEN: KID PIN
 ════════════════════════════════════════════ -->
@@ -225,7 +320,6 @@
     <div class="pin-pad" id="kidPinPad"></div>
   </div>
 </div>
-
 <!-- ═══════════════════════════════════════════
      SCREEN: KID TICKETS
 ════════════════════════════════════════════ -->
@@ -240,7 +334,6 @@
     <div class="empty-msg" id="ticketEmpty" style="display:none;">No tickets yet!<br>Ask a parent to earn some. 🎉</div>
   </div>
 </div>
-
 <!-- ═══════════════════════════════════════════
      SCREEN: CONFIRM USE TICKET
 ════════════════════════════════════════════ -->
@@ -262,34 +355,31 @@
     </div>
   </div>
 </div>
-
 <!-- ═══════════════════════════════════════════
-     SCREEN: TIMER
+     SCREEN: ACTIVE TIMERS (multi)
 ════════════════════════════════════════════ -->
 <div class="screen" id="timerScreen">
-  <div class="timer-wrap">
-    <div class="timer-name" id="timerName"></div>
-    <div class="timer-clock" id="timerClock">00:00</div>
-    <div class="timer-progress"><div class="timer-fill" id="timerFill" style="width:100%"></div></div>
-    <div class="timer-btns">
-      <button class="btn btn-secondary" id="pauseBtn" onclick="togglePause()" style="flex:1;">Pause</button>
-      <button class="btn btn-danger" onclick="cancelTimer()" style="flex:1;">Cancel</button>
-    </div>
+  <div class="nav-bar">
+    <button class="nav-back" onclick="goHome()"></button>
+    <h1>Active Timers</h1>
+    <div style="width:60px;"></div>
+  </div>
+  <div class="scroll-body">
+    <div id="activeTimersList"></div>
+    <div class="empty-msg" id="timersEmpty" style="display:none;">No active timers right now.</div>
   </div>
 </div>
-
 <!-- ═══════════════════════════════════════════
-     SCREEN: ALARM
+     SCREEN: ALARM (for finished timer)
 ════════════════════════════════════════════ -->
 <div class="screen" id="alarmScreen">
   <div class="alarm-wrap">
     <div class="alarm-icon">⏰</div>
     <div class="alarm-title" id="alarmTitle">Time's up!</div>
     <div class="alarm-sub" id="alarmSub">Your screen time is done. Please hand the device to an adult.</div>
-    <button class="btn btn-secondary" style="margin-top:32px;max-width:320px;width:100%;" onclick="goHome()">Done</button>
+    <button class="btn btn-secondary" style="margin-top:32px;max-width:320px;width:100%;" onclick="dismissAlarm()">Done</button>
   </div>
 </div>
-
 <!-- ═══════════════════════════════════════════
      SCREEN: PARENT LOCK
 ════════════════════════════════════════════ -->
@@ -311,7 +401,6 @@
     </div>
   </div>
 </div>
-
 <!-- ═══════════════════════════════════════════
      SCREEN: PARENT DASHBOARD
 ════════════════════════════════════════════ -->
@@ -325,7 +414,6 @@
     <div class="section-label">Kids</div>
     <div id="parentKidList"></div>
     <button class="btn btn-secondary" style="margin-top:4px;" onclick="openAddKid()">+ Add kid</button>
-
     <div class="section-label" style="margin-top:28px;">Parent password</div>
     <div class="form-field">
       <label class="form-label">New password</label>
@@ -339,7 +427,6 @@
     <button class="btn btn-secondary" onclick="changeParentPw()">Update password</button>
   </div>
 </div>
-
 <!-- ═══════════════════════════════════════════
      SCREEN: MANAGE KID
 ════════════════════════════════════════════ -->
@@ -353,12 +440,9 @@
     <div class="section-label">Tickets</div>
     <div id="manageTicketList"></div>
     <div class="empty-msg" id="manageTicketEmpty" style="display:none;padding:16px 0;">No tickets yet.</div>
-
     <button class="btn btn-secondary" onclick="openAddTicket()">+ Add ticket</button>
-
     <div class="section-label" style="margin-top:28px;">Color</div>
     <div class="color-picker" id="manageKidColorPicker"></div>
-
     <div class="section-label" style="margin-top:8px;">Change PIN</div>
     <div class="form-field">
       <input class="form-input" type="password" inputmode="numeric" maxlength="4" id="newPin1" placeholder="New 4-digit PIN" pattern="[0-9]*">
@@ -368,13 +452,11 @@
     </div>
     <div style="font-size:13px;color:var(--danger);min-height:18px;margin-bottom:12px;" id="pinChangeError"></div>
     <button class="btn btn-secondary" onclick="changeKidPin()">Update PIN</button>
-
     <div style="margin-top:32px;">
       <button class="btn btn-danger" onclick="deleteKid()">Remove this kid</button>
     </div>
   </div>
 </div>
-
 <!-- OVERLAY: Add Kid -->
 <div class="overlay" id="addKidOverlay">
   <div class="sheet">
@@ -398,7 +480,6 @@
     <button class="btn btn-secondary" style="margin-top:10px;" onclick="closeAddKid()">Cancel</button>
   </div>
 </div>
-
 <!-- OVERLAY: Add Ticket -->
 <div class="overlay" id="addTicketOverlay">
   <div class="sheet">
@@ -426,38 +507,38 @@
     <button class="btn btn-secondary" style="margin-top:10px;" onclick="closeAddTicket()">Cancel</button>
   </div>
 </div>
-
 <script>
 // ══════════════════════════════════════
 // STATE
 // ══════════════════════════════════════
 var state = {
   parentPw: null,
-  kids: []
+  kids: [],
+  activeTimers: []   // { id, kidId, kidName, totalSeconds, remainingSeconds, paused, finished }
 };
-
 var currentKidId = null;
 var selectedTicketId = null;
 var timerInterval = null;
-var remainingSeconds = 0;
-var totalSeconds = 0;
-var paused = false;
 var currentManageKidId = null;
 var kidPinBuffer = '';
-
+var alarmTimerId = null; // which timer just finished (for alarm screen)
 // ══════════════════════════════════════
 // PERSISTENCE
 // ══════════════════════════════════════
 function load() {
   try {
     const raw = localStorage.getItem('screentime_v2');
-    if (raw) state = JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      state.parentPw = parsed.parentPw || null;
+      state.kids = parsed.kids || [];
+      state.activeTimers = parsed.activeTimers || [];
+    }
   } catch(e) {}
 }
 function save() {
   try { localStorage.setItem('screentime_v2', JSON.stringify(state)); } catch(e) {}
 }
-
 // ══════════════════════════════════════
 // UTILITIES
 // ══════════════════════════════════════
@@ -465,7 +546,6 @@ function uid() { return Math.random().toString(36).slice(2, 10); }
 function getEl(id) { return document.getElementById(id); }
 function getKid(id) { return state.kids.find(k => k.id === id); }
 function initials(name) { return name.trim().split(/\s+/).map(w=>w[0]).join('').toUpperCase().slice(0,2); }
-
 var KID_COLORS = [
   { name: 'Red',          bg: '#ffe0e0', fg: '#a32020' },
   { name: 'Red-orange',   bg: '#ffe5d6', fg: '#b83a10' },
@@ -480,12 +560,10 @@ var KID_COLORS = [
   { name: 'Violet',       bg: '#ede0ff', fg: '#6230b8' },
   { name: 'Pink',         bg: '#ffe0f5', fg: '#a0207a' }
 ];
-
 function avatarStyle(colorIndex) {
   var c = KID_COLORS[colorIndex != null ? colorIndex : 0];
   return 'background:' + c.bg + ';color:' + c.fg + ';';
 }
-
 function buildColorPicker(containerId, selectedIndex, onSelect) {
   var container = getEl(containerId);
   container.innerHTML = '';
@@ -503,13 +581,16 @@ function buildColorPicker(containerId, selectedIndex, onSelect) {
     container.appendChild(swatch);
   });
 }
-
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   getEl(id).classList.add('active');
   window.scrollTo(0, 0);
 }
-
+function formatTime(secs) {
+  const m = Math.floor(Math.max(0, secs) / 60);
+  const s = Math.max(0, secs) % 60;
+  return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+}
 // ══════════════════════════════════════
 // SETUP
 // ══════════════════════════════════════
@@ -524,24 +605,32 @@ function finishSetup() {
   renderHome();
   showScreen('homeScreen');
 }
-
 // ══════════════════════════════════════
 // HOME
 // ══════════════════════════════════════
 function goHome() {
-  if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
   currentKidId = null;
   renderHome();
   showScreen('homeScreen');
 }
-
 function renderHome() {
+  // Active timers banner
+  const banner = getEl('activeTimersBanner');
+  const running = state.activeTimers.filter(t => !t.finished);
+  if (running.length > 0) {
+    banner.style.display = '';
+    getEl('activeTimersCount').textContent = running.length;
+    getEl('activeTimersSub').textContent = running.length === 1 ? '1 timer running' : running.length + ' timers running';
+  } else {
+    banner.style.display = 'none';
+  }
+
   const list = getEl('kidList');
   const empty = getEl('homeEmpty');
   list.innerHTML = '';
   if (!state.kids.length) { empty.style.display = ''; return; }
   empty.style.display = 'none';
-  state.kids.forEach((kid, i) => {
+  state.kids.forEach((kid) => {
     const count = kid.tickets ? kid.tickets.length : 0;
     const div = document.createElement('div');
     div.className = 'kid-card';
@@ -556,7 +645,6 @@ function renderHome() {
     list.appendChild(div);
   });
 }
-
 // ══════════════════════════════════════
 // KID PIN
 // ══════════════════════════════════════
@@ -570,7 +658,6 @@ function openKidPin(kidId) {
   showScreen('kidPinScreen');
   buildPinPad('kidPinPad', kidPinPress, kidPinDel);
 }
-
 function buildPinPad(padId, pressFn, delFn) {
   const pad = getEl(padId);
   pad.innerHTML = '';
@@ -583,7 +670,6 @@ function buildPinPad(padId, pressFn, delFn) {
     pad.appendChild(btn);
   });
 }
-
 function kidPinPress(digit) {
   if (kidPinBuffer.length >= 4) return;
   kidPinBuffer += digit;
@@ -592,12 +678,10 @@ function kidPinPress(digit) {
     setTimeout(validateKidPin, 120);
   }
 }
-
 function kidPinDel() {
   kidPinBuffer = kidPinBuffer.slice(0, -1);
   updateKidPinDots();
 }
-
 function updateKidPinDots() {
   for (let i = 0; i < 4; i++) {
     const dot = getEl('kd' + i);
@@ -605,7 +689,6 @@ function updateKidPinDots() {
     dot.classList.remove('error');
   }
 }
-
 function validateKidPin() {
   const kid = getKid(currentKidId);
   if (kidPinBuffer === kid.pin) {
@@ -620,7 +703,6 @@ function validateKidPin() {
     }, 900);
   }
 }
-
 // ══════════════════════════════════════
 // TICKETS
 // ══════════════════════════════════════
@@ -630,7 +712,6 @@ function showTickets() {
   renderTicketGrid();
   showScreen('ticketScreen');
 }
-
 function renderTicketGrid() {
   const kid = getKid(currentKidId);
   const grid = getEl('ticketGrid');
@@ -647,7 +728,6 @@ function renderTicketGrid() {
     grid.appendChild(btn);
   });
 }
-
 function confirmTicket(ticketId) {
   selectedTicketId = ticketId;
   const kid = getKid(currentKidId);
@@ -656,65 +736,181 @@ function confirmTicket(ticketId) {
   getEl('confirmDesc').textContent = `This will start a ${ticket.mins}-minute countdown for ${kid.name}. The ticket will be used once you start.`;
   showScreen('confirmScreen');
 }
-
 // ══════════════════════════════════════
-// TIMER
+// MULTI TIMERS
 // ══════════════════════════════════════
 function startTimer() {
   const kid = getKid(currentKidId);
   const idx = kid.tickets.findIndex(t => t.id === selectedTicketId);
+  if (idx === -1) return;
   const ticket = kid.tickets[idx];
   kid.tickets.splice(idx, 1);
   save();
 
-  totalSeconds = ticket.mins * 60;
-  remainingSeconds = totalSeconds;
-  paused = false;
-  getEl('timerName').textContent = kid.name;
-  getEl('pauseBtn').textContent = 'Pause';
-  updateTimerDisplay();
-  showScreen('timerScreen');
-  timerInterval = setInterval(tick, 1000);
+  const timer = {
+    id: uid(),
+    kidId: kid.id,
+    kidName: kid.name,
+    totalSeconds: ticket.mins * 60,
+    remainingSeconds: ticket.mins * 60,
+    paused: false,
+    finished: false
+  };
+  state.activeTimers.push(timer);
+  save();
+
+  ensureTimerLoop();
+  showActiveTimers();
 }
 
-function tick() {
-  if (paused) return;
-  remainingSeconds--;
-  updateTimerDisplay();
-  if (remainingSeconds <= 0) {
-    clearInterval(timerInterval); timerInterval = null;
-    triggerAlarm();
+function ensureTimerLoop() {
+  if (timerInterval) return;
+  timerInterval = setInterval(tickAll, 1000);
+}
+
+function tickAll() {
+  let anyRunning = false;
+  let justFinished = null;
+
+  state.activeTimers.forEach(t => {
+    if (t.finished || t.paused) return;
+    anyRunning = true;
+    t.remainingSeconds--;
+    if (t.remainingSeconds <= 0) {
+      t.remainingSeconds = 0;
+      t.finished = true;
+      justFinished = t;
+    }
+  });
+
+  // Clean up finished ones after a short delay is handled by dismiss
+  save();
+  renderActiveTimersList();
+  renderHome(); // update banner count
+
+  if (justFinished) {
+    alarmTimerId = justFinished.id;
+    playAlarm();
+    // Only jump to alarm screen if we're currently on the timer list
+    if (getEl('timerScreen').classList.contains('active')) {
+      showAlarmFor(justFinished);
+    }
+  }
+
+  // Stop the interval if nothing is running
+  const stillActive = state.activeTimers.some(t => !t.finished && !t.paused);
+  if (!stillActive && timerInterval) {
+    // keep interval running if any are just paused, but stop if all finished
+    const anyUnfinished = state.activeTimers.some(t => !t.finished);
+    if (!anyUnfinished) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
   }
 }
 
-function updateTimerDisplay() {
-  const m = Math.floor(remainingSeconds / 60);
-  const s = remainingSeconds % 60;
-  getEl('timerClock').textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
-  const pct = totalSeconds > 0 ? (remainingSeconds / totalSeconds) * 100 : 0;
-  const fill = getEl('timerFill');
-  fill.style.width = pct + '%';
-  fill.style.background = remainingSeconds <= 60 ? '#c0392b' : remainingSeconds <= totalSeconds * 0.25 ? '#b8560a' : 'var(--text)';
+function showActiveTimers() {
+  renderActiveTimersList();
+  showScreen('timerScreen');
+  ensureTimerLoop();
 }
 
-function togglePause() {
-  paused = !paused;
-  getEl('pauseBtn').textContent = paused ? 'Resume' : 'Pause';
+function renderActiveTimersList() {
+  const list = getEl('activeTimersList');
+  const empty = getEl('timersEmpty');
+  list.innerHTML = '';
+
+  // Sort: running first, then paused, then finished
+  const timers = [...state.activeTimers].sort((a, b) => {
+    if (a.finished !== b.finished) return a.finished ? 1 : -1;
+    if (a.paused !== b.paused) return a.paused ? 1 : -1;
+    return 0;
+  });
+
+  if (!timers.length) {
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  timers.forEach(t => {
+    const card = document.createElement('div');
+    card.className = 'timer-card' + (t.finished ? ' finished' : '');
+    const statusClass = t.finished ? 'done' : (t.paused ? 'paused' : 'running');
+    const statusText = t.finished ? 'Time\'s up' : (t.paused ? 'Paused' : 'Running');
+    const pct = t.totalSeconds > 0 ? (t.remainingSeconds / t.totalSeconds) * 100 : 0;
+    let fillColor = 'var(--text)';
+    if (t.finished) fillColor = 'var(--danger)';
+    else if (t.remainingSeconds <= 60) fillColor = '#c0392b';
+    else if (t.remainingSeconds <= t.totalSeconds * 0.25) fillColor = '#b8560a';
+
+    card.innerHTML = `
+      <div class="timer-card-header">
+        <div class="timer-kid-name">${t.kidName}</div>
+        <div class="timer-status ${statusClass}">${statusText}</div>
+      </div>
+      <div class="timer-clock-big">${formatTime(t.remainingSeconds)}</div>
+      <div class="timer-progress"><div class="timer-fill" style="width:${pct}%;background:${fillColor}"></div></div>
+      <div class="timer-actions">
+        ${t.finished
+          ? `<button class="btn btn-primary" onclick="dismissFinishedTimer('${t.id}')">Dismiss</button>`
+          : `
+            <button class="btn btn-secondary" onclick="toggleTimerPause('${t.id}')">${t.paused ? 'Resume' : 'Pause'}</button>
+            <button class="btn btn-danger" onclick="cancelOneTimer('${t.id}')">Cancel</button>
+          `}
+      </div>`;
+    list.appendChild(card);
+  });
 }
 
-function cancelTimer() {
-  if (confirm('Cancel the timer? The ticket will be gone.')) {
-    clearInterval(timerInterval); timerInterval = null;
+function toggleTimerPause(timerId) {
+  const t = state.activeTimers.find(x => x.id === timerId);
+  if (!t || t.finished) return;
+  t.paused = !t.paused;
+  save();
+  renderActiveTimersList();
+  ensureTimerLoop();
+}
+
+function cancelOneTimer(timerId) {
+  if (!confirm('Cancel this timer? The ticket will be gone.')) return;
+  state.activeTimers = state.activeTimers.filter(t => t.id !== timerId);
+  save();
+  renderActiveTimersList();
+  renderHome();
+  if (!state.activeTimers.some(t => !t.finished)) {
+    // optional: go home if nothing left
+  }
+}
+
+function dismissFinishedTimer(timerId) {
+  state.activeTimers = state.activeTimers.filter(t => t.id !== timerId);
+  save();
+  renderActiveTimersList();
+  renderHome();
+  if (state.activeTimers.length === 0) {
     goHome();
   }
 }
 
-function triggerAlarm() {
-  const kid = getKid(currentKidId);
-  getEl('alarmTitle').textContent = 'Time\'s up, ' + kid.name + '!';
+function showAlarmFor(timer) {
+  getEl('alarmTitle').textContent = 'Time\'s up, ' + timer.kidName + '!';
   getEl('alarmSub').textContent = 'Your screen time ticket is done. Please hand the device to an adult.';
-  playAlarm();
   showScreen('alarmScreen');
+}
+
+function dismissAlarm() {
+  if (alarmTimerId) {
+    state.activeTimers = state.activeTimers.filter(t => t.id !== alarmTimerId);
+    alarmTimerId = null;
+    save();
+  }
+  // Prefer going back to the timer list if others are still running
+  if (state.activeTimers.some(t => !t.finished)) {
+    showActiveTimers();
+  } else {
+    goHome();
+  }
 }
 
 function playAlarm() {
@@ -732,7 +928,6 @@ function playAlarm() {
     });
   } catch(e) {}
 }
-
 // ══════════════════════════════════════
 // PARENT LOCK
 // ══════════════════════════════════════
@@ -742,7 +937,6 @@ function openParentLock() {
   showScreen('parentLockScreen');
   setTimeout(() => getEl('parentPwInput').focus(), 100);
 }
-
 function checkParentPw() {
   const val = getEl('parentPwInput').value;
   if (val === state.parentPw) {
@@ -753,7 +947,6 @@ function checkParentPw() {
     getEl('parentPwInput').value = '';
   }
 }
-
 // ══════════════════════════════════════
 // PARENT DASHBOARD
 // ══════════════════════════════════════
@@ -761,11 +954,10 @@ function showParent() {
   renderParentDashboard();
   showScreen('parentScreen');
 }
-
 function renderParentDashboard() {
   const list = getEl('parentKidList');
   list.innerHTML = '';
-  state.kids.forEach((kid, i) => {
+  state.kids.forEach((kid) => {
     const count = kid.tickets ? kid.tickets.length : 0;
     const row = document.createElement('div');
     row.className = 'parent-kid-row';
@@ -781,7 +973,6 @@ function renderParentDashboard() {
     list.appendChild(row);
   });
 }
-
 function changeParentPw() {
   const p1 = getEl('changePw1').value;
   const p2 = getEl('changePw2').value;
@@ -794,12 +985,10 @@ function changeParentPw() {
   getEl('changePw1').value = ''; getEl('changePw2').value = '';
   setTimeout(() => { err.textContent = ''; err.style.color = 'var(--danger)'; }, 2500);
 }
-
 // ══════════════════════════════════════
 // ADD KID OVERLAY
 // ══════════════════════════════════════
 var newKidColorIndex = 0;
-
 function openAddKid() {
   getEl('newKidName').value = ''; getEl('newKidPin').value = ''; getEl('addKidError').textContent = '';
   newKidColorIndex = 0;
@@ -808,7 +997,6 @@ function openAddKid() {
   setTimeout(() => getEl('newKidName').focus(), 100);
 }
 function closeAddKid() { getEl('addKidOverlay').classList.remove('open'); }
-
 function saveNewKid() {
   const name = getEl('newKidName').value.trim();
   const pin = getEl('newKidPin').value.trim();
@@ -818,7 +1006,6 @@ function saveNewKid() {
   state.kids.push({ id: uid(), name, pin, colorIndex: newKidColorIndex, tickets: [] });
   save(); closeAddKid(); renderParentDashboard();
 }
-
 // ══════════════════════════════════════
 // MANAGE KID
 // ══════════════════════════════════════
@@ -836,7 +1023,6 @@ function openKidManage(kidId) {
   renderManageTickets();
   showScreen('kidManageScreen');
 }
-
 function renderManageTickets() {
   const kid = getKid(currentManageKidId);
   const list = getEl('manageTicketList');
@@ -857,13 +1043,11 @@ function renderManageTickets() {
     list.appendChild(div);
   });
 }
-
 function deleteTicket(ticketId) {
   const kid = getKid(currentManageKidId);
   kid.tickets = kid.tickets.filter(t => t.id !== ticketId);
   save(); renderManageTickets();
 }
-
 function changeKidPin() {
   const p1 = getEl('newPin1').value.trim();
   const p2 = getEl('newPin2').value.trim();
@@ -876,15 +1060,15 @@ function changeKidPin() {
   getEl('newPin1').value = ''; getEl('newPin2').value = '';
   setTimeout(() => { err.textContent = ''; err.style.color = 'var(--danger)'; }, 2500);
 }
-
 function deleteKid() {
   const kid = getKid(currentManageKidId);
   if (confirm(`Remove ${kid.name}? All their tickets will be deleted.`)) {
+    // Also remove any active timers for this kid
+    state.activeTimers = state.activeTimers.filter(t => t.kidId !== currentManageKidId);
     state.kids = state.kids.filter(k => k.id !== currentManageKidId);
     save(); showParent();
   }
 }
-
 // ══════════════════════════════════════
 // ADD TICKET OVERLAY
 // ══════════════════════════════════════
@@ -895,7 +1079,6 @@ function openAddTicket() {
   getEl('addTicketOverlay').classList.add('open');
 }
 function closeAddTicket() { getEl('addTicketOverlay').classList.remove('open'); }
-
 function saveNewTicket() {
   const mins = parseInt(getEl('newTicketMins').value);
   const label = getEl('newTicketLabel').value.trim();
@@ -904,7 +1087,6 @@ function saveNewTicket() {
   kid.tickets.push({ id: uid(), mins, label });
   save(); closeAddTicket(); renderManageTickets();
 }
-
 // ══════════════════════════════════════
 // MANIFEST (inline PWA)
 // ══════════════════════════════════════
@@ -925,7 +1107,6 @@ function injectManifest() {
   const url = URL.createObjectURL(blob);
   getEl('manifestLink').href = url;
 }
-
 // ══════════════════════════════════════
 // EXPOSE TO WINDOW (fixes onclick scoping)
 // ══════════════════════════════════════
@@ -947,25 +1128,29 @@ window.deleteTicket = deleteTicket;
 window.showTickets = showTickets;
 window.confirmTicket = confirmTicket;
 window.startTimer = startTimer;
-window.togglePause = togglePause;
-window.cancelTimer = cancelTimer;
+window.showActiveTimers = showActiveTimers;
+window.toggleTimerPause = toggleTimerPause;
+window.cancelOneTimer = cancelOneTimer;
+window.dismissFinishedTimer = dismissFinishedTimer;
+window.dismissAlarm = dismissAlarm;
 window.showParent = showParent;
 window.kidPinPress = kidPinPress;
 window.kidPinDel = kidPinDel;
-
 // ══════════════════════════════════════
 // INIT
 // ══════════════════════════════════════
 load();
 injectManifest();
-
 if (!state.parentPw) {
   showScreen('setupScreen');
 } else {
   renderHome();
   showScreen('homeScreen');
+  // Resume any running timers
+  if (state.activeTimers.some(t => !t.finished)) {
+    ensureTimerLoop();
+  }
 }
-
 // Close overlays on outside tap
 ['addKidOverlay','addTicketOverlay'].forEach(function(id) {
   getEl(id).addEventListener('click', function(e) {
